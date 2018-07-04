@@ -156,12 +156,12 @@ fit1 = (@test_nowarn fitDiscrete(net, m1, tips; fixedparam=true));
 species = ["G","C","A","B","D"]
 dat1 = DataFrame(trait = ["hi","hi","lo","lo","hi"], species = species)
 m2 = BinaryTraitSubstitutionModel(0.2, 0.3, ["lo", "hi"])
-fit2 = fitDiscrete(net, m2, dat1; fixedparam=true)
+fit2 = (@test_nowarn fitDiscrete(net, m2, dat1; fixedparam=true))
 @test fit2.trait == [[1],[1],[2],[2]]
 @test loglikelihood(fit2) ≈ -2.6754091090953693
 originalSTDOUT = STDOUT
 redirect_stdout(open("/dev/null", "w"))
-fit2 = @test_nowarn fitDiscrete(net, m2, dat1; verbose=true)
+fit2 = @test_nowarn fitDiscrete(net, m2, dat1; verbose=true) # 65 iterations
 redirect_stdout(originalSTDOUT)
 @test fit2.model.rate ≈ [0.29993140042699212, 0.38882902905265493] atol=2e-4
 @test loglikelihood(fit2) ≈ -2.6447247349802496 atol=2e-4
@@ -170,6 +170,7 @@ dat2 = DataFrame(trait1= ["hi","hi","lo","lo","hi"], trait2=["hi",missing,"lo","
 fit3 = (@test_nowarn fitDiscrete(net, m2, species, dat2; fixedparam=true))
 @test fit3.loglik ≈ (-2.6754091090953693 - 2.1207856874033491)
 PhyloNetworks.fit!(fit3; fixedparam=false)
+@test fit3.model.rate ≈ [0.3245640354187991, 0.5079501745877728]
 fit3.net = readTopology("(A,(B,(C,D):1.0):1.0);"); # no branch lengths
 @test_throws ErrorException PhyloNetworks.fit!(fit3; fixedparam=false)
 
